@@ -1,59 +1,25 @@
 
 services:
-
-  better-up-postgres:
-    image: postgres:latest
-    container_name: better-up-postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: "9059015626"
-    networks:
-      - better-up
-
-  better-up-redis:
-    image: redis:latest
-    container_name: better-up-redis
-    ports:
-      - "6379:6379"
-    networks:
-      - better-up
-
   publisher:
-    build:
-      context: .
-      dockerfile: ./publisher/Dockerfile
-    depends_on:
-      - better-up-postgres
-      - better-up-redis
+    image: mukulpretham/better-up-publisher:linux
+    volumes:
+      - /home/ubuntu/.env:./publisher/.env
     networks:
       - better-up
 
   consumer:
-    build:
-      context: .
-      dockerfile: ./consumer/Dockerfile
-    depends_on:
-      - better-up-postgres
-      - better-up-redis
+    image: mukulpretham/better-up-consumer:linux
     networks:
       - better-up
-    environment:
-      - REGION=India
+    volumes:
+      - /home/ubuntu/.env:./consumer/.env
 
   nf-server:
-    build:
-      context: .
-      dockerfile: ./nf-server/Dockerfile
-    depends_on:
-      - better-up-postgres
-      - better-up-redis
+    image: mukulpretham/better-up-nfserver:linux
+    volumes:
+      - /home/ubuntu/.env:./nf-server/.env
     networks:
       - better-up
-    env_file:
-      - ./nf-server/.env
 networks:
   better-up:
     external: true

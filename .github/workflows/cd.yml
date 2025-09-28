@@ -49,39 +49,45 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            echo DATABASE_URL=postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@better-up-postgres:5432/postgres > .env
-            echo -e "GITHUB_ID=${{ secrets.GIT_ID }}\nGITHUB_SECRET=${{ secrets.GIT_SECRET }}\nNEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}\nNEXTAUTH_DEBUG=false"\nNEXTAUTH_URL="http://50.16.33.174:3000" > .env.local
             
+            echo "FromEmail=${{ secrets.FROM_EMAIL }}
+            SmptHost=${{ secrets.SMTP_HOST }}
+            SmptPort=${{ secrets.SMTP_PORT }}
+            SmptIP=${{ secrets.SMTP_IP }}
+            REGION=India
+            DB-PASSWORD=9059015626
+            AppPassword=${{ secrets.APP_PASSWORD }}" > .env
 
-
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-turbo:linux
             sudo docker network create better-up || true
-            sudo docker volume create pgdata || true
 
-            sudo docker rm -f better-up-postgres || true
-            sudo docker rm -f better-up-redis || true
-            sudo docker rm -f better-up-turbo || true
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux
+            
+            sudo docker network create better-up || true
+
+            sudo docker rm -f better-up-publisher || true
+            sudo docker rm -f better-up-consumer || true
+            sudo docker rm -f better-up-nfserver || true
 
             sudo docker run -d \
-              -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-              --name better-up-postgres \
+              --name better-up-publisher \
               --network better-up \
-              -v pgdata:/var/lib/postgresql/data \
-              postgres
+              -v /home/ubuntu/.env:/app/publisher/.env \
+              better-up-publisher:linux
             
 
             sudo docker run -d \
-              --name better-up-redis \
+              --name better-up-consumer \
               --network better-up \
-              redis
+              -v /home/ubuntu/.env:/app/consumer/.env \
+              better-up-consumer:linux
 
-            sudo docker run -d -p 3000:3000 -p 3001:3001 \
-              --name better-up-turbo \
+            sudo docker run -d \
+              --name better-up-nfserver \
               --network better-up \
-              -v /home/ubuntu/.env:/nextApp/packages/db/.env \
-              -v /home/ubuntu/.env.local:/nextApp/apps/my-app/.env.local \
-              -e PRISMA_ENV_PATH=/nextApp/packages/db/.env \
-              ${{ secrets.DOCKER_USERNAME }}/better-up-turbo:linux
+              -v /home/ubuntu/.env:/app/nf-server/.env \
+              better-up-nfserver:linux
 
 
       
