@@ -130,6 +130,7 @@ func WriteToDB(url string, client *redis.Client, ID string) {
 	currLatency = float64(time.Since(start).Milliseconds())
 
 	env := os.Getenv("REGION")
+	fmt.Print(env)
 	currRegionId, err := getRegionId(&db, env)
 	if err != nil {
 		log.Fatal(err)

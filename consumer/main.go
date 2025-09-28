@@ -30,6 +30,7 @@ func main() {
 	godotenv.Load(".env")
 
 	//Cureent Consumer Group
+	fmt.Print(os.Getenv("REGION"))
 	currConsumerGroup := fmt.Sprintf("%sConsumerGroup",os.Getenv("REGION"))
 	
 	// Redis client created

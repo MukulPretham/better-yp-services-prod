@@ -50,6 +50,7 @@ func main() {
 			err := SendMain(mails, msg)
 			if err != nil {
 				fmt.Print("failed to send eamil")
+				fmt.Print(err)
 			}
 			fmt.Println("sent")
 			client.XAck(context.Background(), "notifications", readRes[0].ID)
