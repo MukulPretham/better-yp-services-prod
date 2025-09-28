@@ -36,6 +36,7 @@ jobs:
             -t ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux .
 
   deploy:
+    needs: build-workers
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to production server via SSH
