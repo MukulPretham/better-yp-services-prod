@@ -1,0 +1,95 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-workers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '23'
+        
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: push Docker build
+        run: |
+          docker buildx build --push --platform linux/amd64,linux/arm64 \
+          -t ${{ secrets.DOCKER_USERNAME }}/better-up-turbo:linux .
+
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to production server via SSH
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            echo DATABASE_URL=postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@better-up-postgres:5432/postgres > .env
+            echo -e "GITHUB_ID=${{ secrets.GIT_ID }}\nGITHUB_SECRET=${{ secrets.GIT_SECRET }}\nNEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}\nNEXTAUTH_DEBUG=false"\nNEXTAUTH_URL="http://50.16.33.174:3000" > .env.local
+            
+
+
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-turbo:linux
+            sudo docker network create better-up || true
+            sudo docker volume create pgdata || true
+
+            sudo docker rm -f better-up-postgres || true
+            sudo docker rm -f better-up-redis || true
+            sudo docker rm -f better-up-turbo || true
+
+            sudo docker run -d \
+              -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+              --name better-up-postgres \
+              --network better-up \
+              -v pgdata:/var/lib/postgresql/data \
+              postgres
+            
+
+            sudo docker run -d \
+              --name better-up-redis \
+              --network better-up \
+              redis
+
+            sudo docker run -d -p 3000:3000 -p 3001:3001 \
+              --name better-up-turbo \
+              --network better-up \
+              -v /home/ubuntu/.env:/nextApp/packages/db/.env \
+              -v /home/ubuntu/.env.local:/nextApp/apps/my-app/.env.local \
+              -e PRISMA_ENV_PATH=/nextApp/packages/db/.env \
+              ${{ secrets.DOCKER_USERNAME }}/better-up-turbo:linux
+
+
+      
+
+
+
+      
+
+
+
+  
