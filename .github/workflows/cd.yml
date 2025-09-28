@@ -64,9 +64,9 @@ jobs:
 
             sudo docker network create better-up || true
 
-            sudo docker rm -f ${{ secrets.DOCKER_USERNAME }}/better-up-publisher || true
-            sudo docker rm -f ${{ secrets.DOCKER_USERNAME }}/better-up-consumer || true
-            sudo docker rm -f ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver || true
+            sudo docker rm -f better-up-publisher || true
+            sudo docker rm -f better-up-consumer || true
+            sudo docker rm -f better-up-nfserver || true
 
             sudo docker run -d \
               --name better-up-publisher \
