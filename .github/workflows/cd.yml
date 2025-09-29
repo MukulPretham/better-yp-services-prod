@@ -65,7 +65,7 @@ jobs:
               --name better-up-publisher \
               --network better-up \
               -v /home/ubuntu/.env.workers:/app/publisher/.env \
-              --env-file /app/publisher/.env \
+              --env-file /home/ubuntu/.env.workers \
               ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux
             
 
@@ -73,14 +73,14 @@ jobs:
               --name better-up-consumer \
               --network better-up \
               -v /home/ubuntu/.env.workers:/app/consumer/.env \
-              --env-file /app/consumer/.env \
+              --env-file /home/ubuntu/.env.workers \
               ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux
 
             sudo docker run -d \
               --name better-up-nfserver \
               --network better-up \
               -v /home/ubuntu/.env.workers:/app/nf-server/.env \
-              --env-file /app/nf-server/.env \
+              --env-file /home/ubuntu/.env.workers \
               ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux
 
 
