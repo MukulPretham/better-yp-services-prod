@@ -90,6 +90,7 @@ func GetEmails(db *gorm.DB,siteId string)[]string{
 	for _,userId := range currUserIds{
 		
 		var currUser User
+		fmt.Println(currUser.Name)
 		db.First(&currUser, "id = ?", userId.UserId)
 		mails = append(mails, currUser.Email)
 	}
