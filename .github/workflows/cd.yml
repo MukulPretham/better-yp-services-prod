@@ -46,14 +46,8 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: |
-            echo "FromEmail=${{ secrets.FROM_EMAIL }}
-            SmptHost=${{ secrets.SMTP_HOST }}
-            SmptPort=${{ secrets.SMTP_PORT }}
-            SmptIP=${{ secrets.SMTP_IP }}
-            REGION=India
-            DB-PASSWORD=9059015626
-            AppPassword=${{ secrets.APP_PASSWORD }}" > .env.workers
+          script:  |
+            echo -e "FromEmail=${{ secrets.FROM_EMAIL }}\nSmptHost=${{ secrets.SMTP_HOST }}\nSmptPort=${{ secrets.SMTP_PORT }}\nSmptIP=${{ secrets.SMTP_IP }}\nREGION=India\nDB_PASSWORD=9059015626\nAppPassword=${{ secrets.APP_PASSWORD }}" > .env.workers
 
             sudo docker network create better-up || true
 
