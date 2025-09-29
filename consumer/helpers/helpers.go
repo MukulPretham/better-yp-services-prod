@@ -85,13 +85,13 @@ func setLatency(db *gorm.DB, siteId string, regionId string, latency float64) {
 func GetEmails(db *gorm.DB,siteId string)[]string{
 	var currUserIds []UserToWebsite 
 	db.Find(&currUserIds,`"siteId"= ?`,siteId)
-	
+	fmt.Println(currUserIds)
 	var mails []string
 	for _,userId := range currUserIds{
 		
 		var currUser User
-		fmt.Println(currUser.Name)
 		db.First(&currUser, "id = ?", userId.UserId)
+		fmt.Println(currUser.Name)
 		mails = append(mails, currUser.Email)
 	}
 	return mails
