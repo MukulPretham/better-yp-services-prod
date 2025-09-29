@@ -6,82 +6,82 @@ on:
       - main
 
 jobs:
-  # build-workers:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-        
-  #     - name: Setup Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-
-  #     - name: Docker Login
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
-
-  #     - name: push Docker build
-  #       run: |
-  #         docker buildx build --push --platform linux/amd64,linux/arm64 \
-  #           -f publisher/Dockerfile \
-  #           -t ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux .
-          
-  #         docker buildx build --push --platform linux/amd64,linux/arm64 \
-  #           -f consumer/Dockerfile \
-  #           -t ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux .
-          
-  #         docker buildx build --push --platform linux/amd64,linux/arm64 \
-  #           -f nf-server/Dockerfile \
-  #           -t ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux .
-
-  deploy:
-    # needs: build-workers
+  build-workers:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to production server via SSH
-        uses: appleboy/ssh-action@v0.1.7
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Login
+        uses: docker/login-action@v2
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script:  |
-            echo -e "FromEmail=${{ secrets.FROM_EMAIL }}\nSmptHost=${{ secrets.SMTP_HOST }}\nSmptPort=${{ secrets.SMTP_PORT }}\nSmptIP=${{ secrets.SMTP_IP }}\nREGION=India\nDB_PASSWORD=9059015626\nAppPassword=${{ secrets.APP_PASSWORD }}" > .env.workers
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-            sudo docker network create better-up || true
+      - name: push Docker build
+        run: |
+          docker buildx build --push --platform linux/amd64 \
+            -f publisher/Dockerfile \
+            -t ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux .
+          
+          docker buildx build --push --platform linux/amd64 \
+            -f consumer/Dockerfile \
+            -t ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux .
+          
+          docker buildx build --push --platform linux/amd64 \
+            -f nf-server/Dockerfile \
+            -t ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux .
 
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux
+  # deploy:
+  #   needs: build-workers
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to production server via SSH
+  #       uses: appleboy/ssh-action@v0.1.7
+  #       with:
+  #         host: ${{ secrets.SSH_HOST }}
+  #         username: ${{ secrets.SSH_USERNAME }}
+  #         key: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         port: ${{ secrets.SSH_PORT }}
+  #         script:  |
+  #           echo -e "FromEmail=${{ secrets.FROM_EMAIL }}\nSmptHost=${{ secrets.SMTP_HOST }}\nSmptPort=${{ secrets.SMTP_PORT }}\nSmptIP=${{ secrets.SMTP_IP }}\nREGION=India\nDB_PASSWORD=9059015626\nAppPassword=${{ secrets.APP_PASSWORD }}" > .env.workers
 
-            sudo docker network create better-up || true
+  #           sudo docker network create better-up || true
 
-            sudo docker rm -f better-up-publisher || true
-            sudo docker rm -f better-up-consumer || true
-            sudo docker rm -f better-up-nfserver || true
+  #           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux
+  #           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux
+  #           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux
 
-            sudo docker run -d \
-              --name better-up-publisher \
-              --network better-up \
-              -v /home/ubuntu/.env.workers:/app/publisher/.env \
-              --env-file /home/ubuntu/.env.workers \
-              ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux
+  #           sudo docker network create better-up || true
+
+  #           sudo docker rm -f better-up-publisher || true
+  #           sudo docker rm -f better-up-consumer || true
+  #           sudo docker rm -f better-up-nfserver || true
+
+  #           sudo docker run -d \
+  #             --name better-up-publisher \
+  #             --network better-up \
+  #             -v /home/ubuntu/.env.workers:/app/publisher/.env \
+  #             --env-file /home/ubuntu/.env.workers \
+  #             ${{ secrets.DOCKER_USERNAME }}/better-up-publisher:linux
             
 
-            sudo docker run -d \
-              --name better-up-consumer \
-              --network better-up \
-              -v /home/ubuntu/.env.workers:/app/consumer/.env \
-              --env-file /home/ubuntu/.env.workers \
-              ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux
+  #           sudo docker run -d \
+  #             --name better-up-consumer \
+  #             --network better-up \
+  #             -v /home/ubuntu/.env.workers:/app/consumer/.env \
+  #             --env-file /home/ubuntu/.env.workers \
+  #             ${{ secrets.DOCKER_USERNAME }}/better-up-consumer:linux
 
-            sudo docker run -d \
-              --name better-up-nfserver \
-              --network better-up \
-              -v /home/ubuntu/.env.workers:/app/nf-server/.env \
-              --env-file /home/ubuntu/.env.workers \
-              ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux
+  #           sudo docker run -d \
+  #             --name better-up-nfserver \
+  #             --network better-up \
+  #             -v /home/ubuntu/.env.workers:/app/nf-server/.env \
+  #             --env-file /home/ubuntu/.env.workers \
+  #             ${{ secrets.DOCKER_USERNAME }}/better-up-nfserver:linux
 
 
       
