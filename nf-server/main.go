@@ -40,7 +40,8 @@ func main() {
 			}
 			defer sqlDB.Close()
 			mails := helpers.GetEmails(&db, m["siteId"])
-			fmt.Println(m["siteId"])
+			fmt.Println("site id is ", m["siteId"]);
+			fmt.Println("region id is ", m["regionId"]);
 			fmt.Println(mails)
 
 			msg := fmt.Sprintf("From: %s\r\n"+

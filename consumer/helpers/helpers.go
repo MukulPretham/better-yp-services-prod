@@ -85,7 +85,10 @@ func setLatency(db *gorm.DB, siteId string, regionId string, latency float64) {
 func GetEmails(db *gorm.DB,siteId string)[]string{
 	var currUserIds []UserToWebsite 
 	db.Find(&currUserIds,`"siteId"= ?`,siteId)
-	fmt.Println(currUserIds)
+	if len(currUserIds) == 0{
+		fmt.Println("no users to notify")
+	}
+	fmt.Println("users to notify are ", currUserIds)
 	var mails []string
 	for _,userId := range currUserIds{
 		
