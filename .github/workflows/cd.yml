@@ -47,7 +47,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            
             echo "FromEmail=${{ secrets.FROM_EMAIL }}
             SmptHost=${{ secrets.SMTP_HOST }}
             SmptPort=${{ secrets.SMTP_PORT }}
